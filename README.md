@@ -11,6 +11,6 @@ Pre-Requisites:
 Plan of Action:
 1. In AWS, create an EC2 Instance server for each service.
 2. Connect trough SSH, Install the service:
-    Jenkins - https://www.jenkins.io/doc/book/installing/linux/#debianubuntu
-    Ansible - Run the 'Installation/ansible.sh'
-    Docker - Run the 'docker.sh' and to change acces to $user 'run docker_user.sh'
+    - Jenkins - https://www.jenkins.io/doc/book/installing/linux/#debianubuntu
+    - Ansible - Run the 'Installation/ansible.sh'
+    - Docker - Run the 'docker.sh' and to change acces to $user 'run docker_user.sh'
