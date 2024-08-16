@@ -14,3 +14,7 @@ Plan of Action:
     - Jenkins - https://www.jenkins.io/doc/book/installing/linux/#debianubuntu
     - Ansible - Run the 'Installation/ansible.sh'
     - Docker - Run the 'docker.sh' and to change acces to $user 'run docker_user.sh'
+3. Now create ssh-key and enable connectivity between serves.
+4. After the Succeful creation of Jenkins using "jenkinsfile for reference"
+	run the job by cahnging the ip's.
+5. The pipeline deploys the app into pod using kubeadm and up the service.
