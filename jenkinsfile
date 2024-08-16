@@ -1,0 +1,68 @@
+node {
+    
+    stage('Git Checkout') {
+        git branch: 'main', url: 'https://github.com/PavanKalyanSaladi/Kubernetes-Cluster-using-CI-CD.git'
+    }
+    
+    stage('Sending Docker file to Ansible over SSH') {
+         sshagent(['ansible']) {
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1'
+             sh 'scp /var/lib/jenkins/workspace/pipeline-demo/* ubuntu@127.0.1.1:/home/ubuntu'
+         }
+        // sh 'cat /home/ubuntu/Kubernetes-Cluster-using-CI-CD/Dockerfile'
+    }
+    
+    stage('Docker Build Image') {
+         sshagent(['ansible']) {
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 cd /home/ubuntu'
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+         }
+        // sh 'cd /home/ubuntu/Kubernetes-Cluster-using-CI-CD'
+        // sh 'docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+    }
+    
+    stage('Docker Image Tagging') {
+         sshagent(['ansible']) {
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 cd /home/ubuntu'
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker image tag $JOB_NAME:v1.$BUILD_ID pavankalyan2001/$JOB_NAME:v1.$BUILD_ID'
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker image tag $JOB_NAME:v1.$BUILD_ID pavankalyan2001/$JOB_NAME:latest'
+         }
+        // sh 'docker image tag $JOB_NAME:v1.$BUILD_ID pavankalyan2001/$JOB_NAME:v1.$BUILD_ID'
+        // sh 'docker image tag $JOB_NAME:v1.$BUILD_ID pavankalyan2001/$JOB_NAME:latest'
+    }
+    
+    stage('Push Docker Image to Docker hub') {
+         sshagent(['ansible']) {
+             withCredentials([string(credentialsId: 'dockerhub_pass', variable: 'dockerhub_pass')]) {
+                 sh "ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker login -u pavankalyan2001 -p ${dockerhub_pass}"
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker image push pavankalyan2001/$JOB_NAME:v1.$BUILD_ID'
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker image push pavankalyan2001/$JOB_NAME:latest'
+                 sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 docker rmi pavankalyan2001/$JOB_NAME:latest pavankalyan2001/$JOB_NAME:v1.$BUILD_ID $JOB_NAME:v1.$BUILD_ID'
+             }
+         }
+        // withCredentials([string(credentialsId: 'dockerhub_pass', variable: 'dockerhub_pass')]) {
+        //     sh "docker login -u pavankalyan2001 -p ${dockerhub_pass}"
+        //     sh 'docker image push pavankalyan2001/$JOB_NAME:v1.$BUILD_ID'
+        //     sh 'docker image push pavankalyan2001/$JOB_NAME:latest'
+        //     sh 'docker rmi pavankalyan2001/$JOB_NAME:latest pavankalyan2001/$JOB_NAME:v1.$BUILD_ID $JOB_NAME:v1.$BUILD_ID'
+        // }
+    }
+    
+    stage('Copy files from ansible to kubernetes') {
+         sshagent(['kubernetes_server']) {
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.2 cd /home/ubuntu'
+             sh 'scp /var/lib/jenkins/workspace/pipeline-demo/* ubuntu@127.0.1.2:/home/ubuntu'
+         }
+        // sh 'cp /home/ubuntu/Kubernetes-Cluster-using-CI-CD/*.yml .'
+    }
+    
+    stage('Kubernetes deployment using ansible') {
+         sshagent(['ansible']) {
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 cd /home/ubuntu'
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 ansible -m ping local'
+             sh 'ssh -o StrictHostKeyChecking=no ubuntu@127.0.1.1 ansible-playbook ansible.yml'
+         }
+        // sh 'ansible -m ping local'
+        // sh 'ansible-playbook ansible.yml'
+    }
+}
