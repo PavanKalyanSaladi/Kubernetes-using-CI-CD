@@ -1,4 +1,4 @@
-# Kubernetes-Cluster-using-CI-CD
+# Kubernetes-App-Deployment-using-CI-CD
 
 This a sample project to deploy an apllication into Kubernetes using CI-CD pipeline.
 
