@@ -1,5 +1,5 @@
 --- 
-- name: Kubernetes Deployment
+- name: Kubernetes Application Deployment
   hosts: local
   become: true
   tasks:
